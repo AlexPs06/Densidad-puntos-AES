@@ -57,23 +57,28 @@ int main(int argc, char const *argv[]){
     
     ALIGN (16) char plaintext[MESSAGE_LENGHT];
     ALIGN (16) unsigned char ciphertext[MESSAGE_LENGHT];
+    unsigned char key[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+
     for (size_t i = 0; i < MESSAGE_LENGHT; i++){
         plaintext[i] = 0x2a;
-        ciphertext[i] = 0;
+        ciphertext[i] = 0x2a;
+        key[i] = 0x0;
     }
     
-    unsigned char key[16] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
     long unsigned int period=0;
 
     __m128i pt = _mm_load_si128 ((__m128i*)&plaintext[0] );
     __m128i K = _mm_load_si128 ((__m128i*)&key[0] );
-    __m128i ct = _mm_setzero_si128(); 
+    __m128i ct = _mm_load_si128 ((__m128i*)&plaintext[0] );
 
     __m128i roundKeys[11];
     AES_128_Key_Expansion(key, roundKeys);
     K = AES_Encrypt_rounds(K,roundKeys,10);
+    ct = AES_Encrypt_rounds(pt,roundKeys,10);
+    pt = AES_Encrypt_rounds(pt,roundKeys,10);
 
     print_hex_string((unsigned char *)&pt,16 );
+    print_hex_string((unsigned char *)&ct,16 );
     print_hex_string((unsigned char *)&K,16 );
     printf("---------------------------------------------\n");
 
@@ -92,31 +97,37 @@ int is_equal(__m128i v1, __m128i v2) {
 }
 
 int serach_period_point(__m128i pt,__m128i ct, __m128i key ){
-    long unsigned int period=0;
+    unsigned long int period=0;
     bool condition = 1;
-
+    unsigned long int impresion = (unsigned long int)__UINT32_MAX__ * 32; 
     do 
     {
 
-        ct = _mm_aesenc_si128 (pt,key);
+        ct = _mm_aesenc_si128 (ct,key);
         period++;
         if (is_equal(pt,ct)){
 
             condition=0;
         }
-        if ((period  == __UINT16_MAX__) ){
-            printf("__UINT16_MAX__ %lu\n", period);
-            fflush(stdout); // Forzado de impresión inmediata
-        }
+        // if ((period  == __UINT16_MAX__) ){
+        //     printf("__UINT16_MAX__ %lu\n", period);
+        //     fflush(stdout); // Forzado de impresión inmediata
+        // }
 
-        if ((period==__UINT32_MAX__)){
-            printf("__UINT32_MAX__ %lu",period);
-            fflush(stdout); // Forzado de impresión inmediata
-        }
-        if ((period==1099511627776) ){
-            printf("1099511627776 %lu",period);
-            fflush(stdout); // Forzado de impresión inmediata
-        }
+        // if ((period==__UINT32_MAX__)){
+        //     printf("__UINT32_MAX__ %lu\n",period);
+        //     fflush(stdout); // Forzado de impresión inmediata
+        // }
+
+        // if ((period==impresion)){
+        //     printf("impresion %lu\n",period);
+        //     fflush(stdout); // Forzado de impresión inmediata
+        // }
+
+        // if ((period==1099511627776) ){
+        //     printf("1099511627776 %lu\n",period);
+        //     fflush(stdout); // Forzado de impresión inmediata
+        // }
         
         
     }while (condition);
