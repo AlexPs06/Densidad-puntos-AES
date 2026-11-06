@@ -58,7 +58,7 @@ int main(int argc, char const *argv[]){
     ALIGN (16) char plaintext[MESSAGE_LENGHT];
     ALIGN (16) unsigned char ciphertext[MESSAGE_LENGHT];
     for (size_t i = 0; i < MESSAGE_LENGHT; i++){
-        plaintext[i] = 1;
+        plaintext[i] = 0x2a;
         ciphertext[i] = 0;
     }
     
@@ -94,6 +94,7 @@ int is_equal(__m128i v1, __m128i v2) {
 int serach_period_point(__m128i pt,__m128i ct, __m128i key ){
     long unsigned int period=0;
     bool condition = 1;
+
     do 
     {
 
@@ -103,14 +104,18 @@ int serach_period_point(__m128i pt,__m128i ct, __m128i key ){
 
             condition=0;
         }
-        if (condition>__UINT16_MAX__){
-            printf("__UINT16_MAX__ %li",period);
+        if ((period  == __UINT16_MAX__) ){
+            printf("__UINT16_MAX__ %lu\n", period);
+            fflush(stdout); // Forzado de impresión inmediata
         }
-        if (condition>__UINT32_MAX__){
-            printf("__UINT32_MAX__ %li",period);
+
+        if ((period==__UINT32_MAX__)){
+            printf("__UINT32_MAX__ %lu",period);
+            fflush(stdout); // Forzado de impresión inmediata
         }
-        if (condition>1099511627776){
-            printf("1099511627776 %li",period);
+        if ((period==1099511627776) ){
+            printf("1099511627776 %lu",period);
+            fflush(stdout); // Forzado de impresión inmediata
         }
         
         
@@ -121,7 +126,7 @@ int serach_period_point(__m128i pt,__m128i ct, __m128i key ){
     printf("Ciphertext:");
     print_hex_string((unsigned char *)&ct,16 );
     printf("key:");
-    print_hex_string((unsigned char *)&ct,16 );
+    print_hex_string((unsigned char *)&key,16 );
     printf("Periodo %li ",period);
 
     return period;
